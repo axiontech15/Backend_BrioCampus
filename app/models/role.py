@@ -1,7 +1,11 @@
-from sqlmodel import Field, SQLModel
-from datetime import UTC, datetime
+from datetime import datetime
+from sqlalchemy import Column, DateTime, Integer, String
+from config.database import Base
+import datetime
 
-class Role(SQLModel,table=True):
-    id:int = Field(default=None,primary_key=True)
-    name:str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+class Role(Base):
+    __tablename__ = "roles"
+    id = Column(Integer, primary_key=True, index=False)
+    name = Column(String(255), unique=True, index=False, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.now, nullable=True)
+    updated_at = Column(DateTime, default=datetime.datetime.now, nullable=True, onupdate=datetime.datetime.now)

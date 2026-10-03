@@ -48,10 +48,7 @@ tickets
 ├── id
 ├── user_id FK
 ├── category_id FK
-├── subject
-├── description
 ├── status
-├── priority
 ├── created_at
 ├── updated_at
 └── closed_at
