@@ -40,6 +40,7 @@ categories
 ├── id
 ├── name
 ├── description
+├── quantity          # taille du pack (nb de tickets)
 ├── status
 ├── created_at
 └── updated_at
@@ -48,7 +49,10 @@ tickets
 ├── id
 ├── user_id FK
 ├── category_id FK
+├── subject
+├── description
 ├── status
+├── priority
 ├── created_at
 ├── updated_at
 └── closed_at
@@ -61,7 +65,8 @@ payments
 ├── reference
 ├── status
 ├── payment_date
-└── created_at
+├── created_at
+└── ticket_quantity
 
 logs
 ├── id
@@ -70,6 +75,8 @@ logs
 ├── description
 ├── ip_address
 ├── user_agent
+├── is_archived
+├── archived_at
 └── created_at
 
 notifications
@@ -81,3 +88,22 @@ notifications
 ├── is_read
 ├── created_at
 └── read_at
+
+graduates  (import palmarès / recherche RH)
+├── id
+├── university_id FK
+├── palmares_id FK
+├── matricule
+├── full_name
+├── faculty
+├── diploma_date
+├── created_at
+└── updated_at
+
+profile_searches  (historique recherches RH trouvées)
+├── id
+├── rh_user_id FK
+├── graduate_id FK
+├── university_id FK
+├── ticket_id FK
+└── created_at

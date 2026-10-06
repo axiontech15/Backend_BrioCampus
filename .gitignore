@@ -1,5 +1,11 @@
 uv.lock
 .venv
-public/__pycache__
-app/*/__pycache__
-config/__pycache__
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+.env
+uploads/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

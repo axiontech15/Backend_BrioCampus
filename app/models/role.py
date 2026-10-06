@@ -1,11 +1,19 @@
-from datetime import datetime
+from datetime import UTC, datetime
+
 from sqlalchemy import Column, DateTime, Integer, String
+
 from config.database import Base
-import datetime
+
 
 class Role(Base):
     __tablename__ = "roles"
-    id = Column(Integer, primary_key=True, index=False)
-    name = Column(String(255), unique=True, index=False, nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.now, nullable=True)
-    updated_at = Column(DateTime, default=datetime.datetime.now, nullable=True, onupdate=datetime.datetime.now)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), unique=True, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+        nullable=False,
+    )
