@@ -1,1 +1,0 @@
-"""BrioCampus application package."""
