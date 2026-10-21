@@ -33,7 +33,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PalmaresService::class);
         $this->app->singleton(PaymentService::class);
         $this->app->singleton(ProfileSearchService::class);
-
         
     }
 
