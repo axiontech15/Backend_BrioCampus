@@ -2,6 +2,7 @@
   namespace App\Http\Services\V1;
 
   use App\Models\Role;
+  use Illuminate\Database\Eloquent\ModelNotFoundException;
   
   class RoleService
   {
@@ -25,9 +26,15 @@
           Role::where('id', $id)->update($data);
       }
 
-      public function deleteRole(int $id)
+      public function deleteRole(int $id):bool
       {
-          Role::destroy($id);
+        $role = Role::find($id);
+        if (!$role) {
+            return false;
+        }
+        $role->delete();
+        return true;
+       
       }
   }
 ?>

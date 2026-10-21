@@ -22,19 +22,14 @@ class RoleController
         return response()->json($roles,200);   
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(RoleRequest $request)
     {
         $data = $request->validated();
+     
         $this->roleService->createRole($data);
         return response()->json(['message' => 'Role created successfully'], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(int $id)
     {
         $role = $this->roleService->getRoleById($id);
@@ -55,12 +50,13 @@ class RoleController
         return response()->json(['message' => 'Role updated successfully'], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(int $id)
     {
-        $this->roleService->deleteRole($id);
-        return response()->json(['message' => 'Role deleted successfully'], 200);
+        $result = $this->roleService->deleteRole($id);
+        if ($result) {
+            return response()->json(['message' => 'Role deleted successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Role not found'], 404);
+        }
     }
 }
