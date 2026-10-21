@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\V1;
 
-use Illuminate\Http\Request;
 use App\Http\Services\V1\CategoryService;
+use App\Http\Requests\V1\CategoryRequest;
+
 class CategoryController
 {
     private $categoryService;
@@ -11,27 +12,21 @@ class CategoryController
     {
         $this->categoryService = $categoryService;
     }
-    /**
-     * Display a listing of the resource.
-     */
+  
     public function index()
     {
         $categories = $this->categoryService->getAllCategories();
         return response()->json($categories, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+ 
+    public function store(CategoryRequest $request)
     {
-        //
+        return $this->categoryService->createCategory($request->validated());
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+ 
+    public function show(int $id)
     {
         $category = $this->categoryService->getCategoryById($id);
         if ($category) {
@@ -41,19 +36,13 @@ class CategoryController
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(CategoryRequest $request, int $id)
     {
-        //
+        return $this->categoryService->updateCategory($id, $request->validated());
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        //
+        return $this->categoryService->deleteCategory($id);
     }
 }

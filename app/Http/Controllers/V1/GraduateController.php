@@ -3,46 +3,40 @@
 namespace App\Http\Controllers\V1;
 
 use Illuminate\Http\Request;
-
+use App\Http\Services\V1\GraduateService;
+use App\Http\Requests\V1\GraduateRequest;
 class GraduateController
 {
-    /**
-     * Display a listing of the resource.
-     */
+   
+    private $graduateService;
+
+    public function __construct(GraduateService $graduateService)
+    {
+        $this->graduateService = $graduateService;
+    }
+
     public function index()
     {
-        //
+        return $this->graduateService->getAllGraduates();   
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(GraduateRequest $request)
     {
-        //
+        return $this->graduateService->createGraduate($request->validated());
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(int $id)
     {
-        //
+        return $this->graduateService->getGraduateById($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(GraduateRequest $request, int $id)
     {
-        //
+        return $this->graduateService->updateGraduate($id, $request->validated());
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        //
+        return $this->graduateService->deleteGraduate($id);
     }
 }

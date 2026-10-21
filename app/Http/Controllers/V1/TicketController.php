@@ -3,46 +3,50 @@
 namespace App\Http\Controllers\V1;
 
 use Illuminate\Http\Request;
+use App\Http\Services\V1\TicketService;
 
 class TicketController
 {
-    /**
-     * Display a listing of the resource.
-     */
+   
+    private $ticketService;
+
+    public function __construct(TicketService $ticketService)
+    {
+        $this->ticketService = $ticketService;
+    }
     public function index()
     {
-        //
+        $tickets = $this->ticketService->getAllTickets();
+        return response()->json($tickets, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validated();
+        $ticket = $this->ticketService->createTicket($data);
+        return response()->json($ticket, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        $ticket = $this->ticketService->getTicketById($id);
+        return response()->json($ticket, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $data = $request->validated();
+        $ticket = $this->ticketService->updateTicket($id, $data);
+        return response()->json($ticket, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $result = $this->ticketService->deleteTicket($id);
+        if ($result) {
+            return response()->json(['message' => 'Ticket deleted successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Ticket not found'], 404);
+        }
     }
 }
