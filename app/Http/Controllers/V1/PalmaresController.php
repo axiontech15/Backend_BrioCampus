@@ -2,47 +2,47 @@
 
 namespace App\Http\Controllers\V1;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\V1\PalmaresRequest;
+use App\Http\Services\V1\PalmaresService;
+
 
 class PalmaresController
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    private $palmaresService;
+
+    public function __construct(PalmaresService $palmaresService)
+    {
+      $this->palmaresService = $palmaresService;
+    }
+
     public function index()
     {
-        //
+        return $this->palmaresService->getAllPalmares();
+    }
+    public function store(PalmaresRequest $request)
+    {
+        $data = $request->validated();
+
+        if($request->hasFile('file'))
+        {
+            $path = $request->file('file')->store('palmares', 'public');
+            $data['file'] = $path;  
+        }
+        $palmares = $this->palmaresService->createPalmares($data);
+        if(!$palmares){
+            return response()->json(['message' => 'Failed to create Palmares'], 500);
+        }
+        return response()->json(['message' => 'Palmares created successfully', 'data' => $palmares], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function update(PalmaresRequest $request, int $id)
     {
-        //
+        return $this->palmaresService->updatePalmares($id, $request->validated());
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function destroy(int $id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return $this->palmaresService->deletePalmares($id);
     }
 }

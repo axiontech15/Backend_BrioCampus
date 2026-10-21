@@ -2,47 +2,37 @@
 
 namespace App\Http\Controllers\V1;
 
+use App\Http\Requests\V1\LogRequest;
 use Illuminate\Http\Request;
-
+use App\Http\Services\V1\LogService;
 class LogController
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private $logService;
+
+    public function __construct(LogService $logService)
+    {
+        $this->logService = $logService;
+    }
+
     public function index()
     {
-        //
+        return $this->logService->getAllLogs();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show(int $id)
     {
-        //
+        return $this->logService->getLogById($id);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+
+    public function update(LogRequest $request, int $id)
     {
-        //
+        return $this->logService->updateLog($id, $request->validated());
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        //
+        return $this->logService->deleteLog($id);
     }
 }
