@@ -4,7 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "postinstall": "mkdir -p public/assets/vendor/fontawesome && cp -a node_modules/@fortawesome/fontawesome-free/css public/assets/vendor/fontawesome/ && cp -a node_modules/@fortawesome/fontawesome-free/webfonts public/assets/vendor/fontawesome/"
+    },
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "^7.3.1"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

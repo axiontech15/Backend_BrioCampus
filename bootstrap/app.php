@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,7 +15,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->append(SecurityHeaders::class);
+
+        $middleware->alias([
+            'role' => EnsureRole::class,
+        ]);
+
+        $middleware->redirectGuestsTo(fn () => route('auth.login'));
+        $middleware->redirectUsersTo(function (Request $request) {
+            $user = $request->user();
+            $role = strtolower((string) $user?->role?->name);
+
+            return match ($role) {
+                'admin' => route('admin.index'),
+                'rh' => route('rh.index'),
+                'university', 'universite' => route('university.index'),
+                default => route('home'),
+            };
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
