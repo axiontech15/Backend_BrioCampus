@@ -12,8 +12,9 @@ return new class extends Migration
         Schema::create('universities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('agent_id')
+                ->nullable()
                 ->constrained('users')
-                ->onDelete('set null');
+                ->nullOnDelete();
 
             $table->string('name');
             $table->string('logo')->nullable();
