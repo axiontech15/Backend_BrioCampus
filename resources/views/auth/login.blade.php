@@ -5,7 +5,10 @@
 @section('content')
 <div class="split">
     <aside class="left">
-        <a class="brand" href="{{ route('home') }}">BRIO CAMPUS</a>
+        <a class="brand brand-logo" href="{{ route('home') }}" aria-label="Brio Campus - accueil">
+            <img src="{{ asset('assets/icons/brio-icon-mini.svg') }}" alt="">
+            <span>BRIO CAMPUS</span>
+        </a>
         <h1>Vérifiez. Certifiez.<br>Recrutez en confiance.</h1>
         <p>La plateforme de référence pour vérifier les diplômes auprès des établissements qui les ont délivrés.</p>
         <svg viewBox="0 0 320 340" role="img"

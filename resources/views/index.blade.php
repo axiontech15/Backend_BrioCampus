@@ -41,7 +41,13 @@
 
     html {
       scroll-behavior: smooth;
-      scroll-padding-top: 70px
+      scroll-padding-top: 70px;
+      scrollbar-width: none;
+      -ms-overflow-style: none
+    }
+
+    html::-webkit-scrollbar {
+      display: none
     }
 
     body {
