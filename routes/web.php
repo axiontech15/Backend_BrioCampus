@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/search', 'search')->name('search');
         Route::post('/tickets', 'buyTickets')->name('tickets.buy');
+        Route::get('/tickets/{ticket}/download', 'downloadTicket')->name('tickets.download');
         Route::get('/profile', 'profile')->name('profile');
         Route::put('/profile', 'updateProfile')->name('profile.update');
     });

@@ -9,6 +9,7 @@ use App\Http\Services\V1\PaymentService;
 use App\Http\Services\V1\ProfileSearchService;
 use App\Http\Services\V1\TicketService;
 use App\Models\Graduate;
+use App\Models\Ticket;
 use App\Models\University;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class RhController extends Controller
 {
@@ -137,6 +139,79 @@ class RhController extends Controller
         ]);
 
         return back()->with('success', $quantity.' ticket(s) ajouté(s) à votre solde.');
+    }
+
+    public function downloadTicket(Ticket $ticket): Response
+    {
+        $user = Auth::user();
+        abort_unless((int) $ticket->user_id === (int) $user->id, 403);
+
+        $ticket->loadMissing('category');
+        $reference = 'BC-TKT-'.$ticket->created_at?->format('Y').'-'.str_pad((string) $ticket->id, 6, '0', STR_PAD_LEFT);
+        $pdf = $this->buildTicketPdf($ticket, $user->name, $reference);
+        $filename = 'ticket-brio-campus-'.$ticket->id.'.pdf';
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Length' => strlen($pdf),
+        ]);
+    }
+
+    private function buildTicketPdf(Ticket $ticket, string $holderName, string $reference): string
+    {
+        $text = fn (string $value): string => $this->sanitizePdfText($value);
+        $packName = $ticket->category?->name ?? 'Pack Brio Campus';
+        $quantity = (int) $ticket->quantity;
+        $issuedAt = $ticket->created_at?->format('d/m/Y') ?? now()->format('d/m/Y');
+
+        $stream = "q\n0.12 0.25 0.65 rg 0 762 595 80 re f Q\n";
+        $stream .= "BT /F1 22 Tf 1 1 1 rg 42 806 Td ({$text('BRIO CAMPUS')}) Tj ET\n";
+        $stream .= "BT /F1 10 Tf 0.78 0.86 1 rg 44 789 Td ({$text('PLATEFORME DE VERIFICATION DES DIPLAMES')}) Tj ET\n";
+        $stream .= "q 0.90 0.93 0.98 rg 42 565 511 155 re f 0.82 0.86 0.94 RG 42 565 511 155 re S Q\n";
+        $stream .= "BT /F1 11 Tf 0.30 0.38 0.56 rg 68 690 Td ({$text('TICKET DE VERIFICATION')}) Tj ET\n";
+        $stream .= "BT /F1 30 Tf 0.07 0.18 0.46 rg 68 635 Td ({$text((string) $quantity.' verification'.($quantity > 1 ? 's' : ''))}) Tj ET\n";
+        $stream .= "BT /F1 13 Tf 0.30 0.38 0.56 rg 68 605 Td ({$text($packName)}) Tj ET\n";
+        $stream .= "BT /F1 10 Tf 0.30 0.38 0.56 rg 68 580 Td ({$text('Reference : '.$reference)}) Tj ET\n";
+        $stream .= "BT /F1 10 Tf 0.30 0.38 0.56 rg 68 490 Td ({$text('ATTRIBUE A')}) Tj ET\n";
+        $stream .= "BT /F1 16 Tf 0.06 0.12 0.36 rg 68 462 Td ({$text($holderName)}) Tj ET\n";
+        $stream .= "BT /F1 10 Tf 0.30 0.38 0.56 rg 68 430 Td ({$text('Statut : APPROUVE')}) Tj ET\n";
+        $stream .= "BT /F1 10 Tf 0.30 0.38 0.56 rg 68 410 Td ({$text('Emis le : '.$issuedAt)}) Tj ET\n";
+        $stream .= "BT /F1 10 Tf 0.30 0.38 0.56 rg 68 300 Td ({$text('1 ticket correspond a 1 verification de diplome.')}) Tj ET\n";
+        $stream .= "BT /F1 10 Tf 0.30 0.38 0.56 rg 68 280 Td ({$text('Presentez ce document lors de vos operations sur Brio Campus.')}) Tj ET\n";
+        $stream .= "BT /F1 9 Tf 0.48 0.53 0.65 rg 68 100 Td ({$text('Brio Campus - Document officiel - '.$issuedAt)}) Tj ET\n";
+
+        $objects = [];
+        $objects[] = '<< /Type /Catalog /Pages 2 0 R >>';
+        $objects[] = '<< /Type /Pages /Kids [3 0 R] /Count 1 >>';
+        $objects[] = '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>';
+        $objects[] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+        $objects[] = '<< /Length '.strlen($stream)." >>\nstream\n{$stream}\nendstream";
+
+        $pdf = "%PDF-1.4\n";
+        $offsets = [0];
+        foreach ($objects as $index => $object) {
+            $offsets[] = strlen($pdf);
+            $pdf .= ($index + 1)." 0 obj\n{$object}\nendobj\n";
+        }
+        $xrefOffset = strlen($pdf);
+        $pdf .= "xref\n0 ".(count($objects) + 1)."\n";
+        $pdf .= "0000000000 65535 f \n";
+        foreach (array_slice($offsets, 1) as $offset) {
+            $pdf .= str_pad((string) $offset, 10, '0', STR_PAD_LEFT).' 00000 n '."\n";
+        }
+        $pdf .= "trailer\n<< /Size ".(count($objects) + 1).' /Root 1 0 R >>'."\n";
+        $pdf .= "startxref\n{$xrefOffset}\n%%EOF";
+
+        return $pdf;
+    }
+
+    private function sanitizePdfText(string $value): string
+    {
+        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+        $ascii = $ascii === false ? $value : $ascii;
+
+        return str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $ascii);
     }
 
     public function profile(): View

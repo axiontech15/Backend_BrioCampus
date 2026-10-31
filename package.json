@@ -5,7 +5,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "postinstall": "mkdir -p public/assets/vendor/fontawesome && cp -a node_modules/@fortawesome/fontawesome-free/css public/assets/vendor/fontawesome/ && cp -a node_modules/@fortawesome/fontawesome-free/webfonts public/assets/vendor/fontawesome/"
+        "postinstall": "node -e \"const fs=require('fs'); fs.mkdirSync('public/assets/vendor/fontawesome',{recursive:true}); fs.cpSync('node_modules/@fortawesome/fontawesome-free/css','public/assets/vendor/fontawesome/css',{recursive:true}); fs.cpSync('node_modules/@fortawesome/fontawesome-free/webfonts','public/assets/vendor/fontawesome/webfonts',{recursive:true});\""
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^7.3.1"
