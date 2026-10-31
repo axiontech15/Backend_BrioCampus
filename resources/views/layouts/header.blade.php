@@ -10,15 +10,21 @@
           href="#parcours">Parcours</a>
       </div>
       @auth
-        @if (auth()->user()->isAdmin())
-          <a class="btn" href="{{ route('admin.index') }}"><i class="fa-solid fa-gauge"></i> Mon espace</a>
-        @elseif (auth()->user()->isRh())
-          <a class="btn" href="{{ route('rh.index') }}"><i class="fa-solid fa-gauge"></i> Mon espace</a>
-        @elseif (auth()->user()->isUniversity())
-          <a class="btn" href="{{ route('university.index') }}"><i class="fa-solid fa-gauge"></i> Mon espace</a>
-        @else
-          <a class="btn" href="{{ route('account.edit') }}">Mon compte</a>
-        @endif
+        <div class="nav-actions">
+          @if (auth()->user()->isAdmin())
+            <a class="btn" href="{{ route('admin.index') }}"><i class="fa-solid fa-gauge"></i> <span>Mon espace</span></a>
+          @elseif (auth()->user()->isRh())
+            <a class="btn" href="{{ route('rh.index') }}"><i class="fa-solid fa-gauge"></i> <span>Mon espace</span></a>
+          @elseif (auth()->user()->isUniversity())
+            <a class="btn" href="{{ route('university.index') }}"><i class="fa-solid fa-gauge"></i> <span>Mon espace</span></a>
+          @else
+            <a class="btn" href="{{ route('account.edit') }}"><i class="fa-solid fa-user"></i> <span>Mon compte</span></a>
+          @endif
+          <form method="POST" action="{{ route('auth.logout') }}">
+            @csrf
+            <button class="btn btn-logout" type="submit"><i class="fa-solid fa-right-from-bracket"></i> <span>Quitter</span></button>
+          </form>
+        </div>
       @else
         <a class="btn" href="{{ route('auth.login') }}">Se connecter</a>
       @endauth

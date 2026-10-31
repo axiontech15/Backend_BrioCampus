@@ -172,6 +172,25 @@
       background: var(--bc-blue-hover)
     }
 
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .nav-actions form {
+      margin: 0
+    }
+
+    .btn.btn-logout {
+      background: rgba(255, 255, 255, .12);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28)
+    }
+
+    .btn.btn-logout:hover {
+      background: rgba(194, 54, 43, .92)
+    }
+
     .btn .ar {
       width: 24px;
       height: 24px;
@@ -922,6 +941,18 @@
     }
 
     @media (max-width:560px) {
+      .nav-actions {
+        gap: 6px
+      }
+
+      .nav-actions .btn {
+        padding: 9px 11px
+      }
+
+      .nav-actions .btn span {
+        display: none
+      }
+
       footer {
         padding-top: 44px
       }
