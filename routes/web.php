@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\V1\AccountController;
 use App\Http\Controllers\V1\AdminController;
 use App\Http\Controllers\V1\AuthController;
@@ -26,6 +27,7 @@ Route::prefix('auth')->name('auth.')->controller(AuthController::class)->group(f
 Route::middleware('auth')->group(function () {
     Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/account', [AccountController::class, 'update'])->name('account.update');
+    Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
 
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->controller(AdminController::class)->group(function () {
         Route::get('/', 'index')->name('index');
@@ -41,13 +43,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/search', 'search')->name('search');
         Route::post('/tickets', 'buyTickets')->name('tickets.buy');
         Route::get('/tickets/{ticket}/download', 'downloadTicket')->name('tickets.download');
+        Route::get('/searches/{profileSearch}', 'show')->name('searches.show');
         Route::get('/profile', 'profile')->name('profile');
         Route::put('/profile', 'updateProfile')->name('profile.update');
     });
 
     Route::prefix('university')->name('university.')->middleware('role:university,universite')->controller(UniversityController::class)->group(function () {
         Route::get('/', 'index')->name('index');
+        Route::get('/palmares/status', 'palmaresStatus')->name('palmares.status');
         Route::put('/profile', 'updateProfile')->name('profile.update');
         Route::post('/palmares/import', 'importPalmares')->name('palmares.import');
+        Route::post('/graduates', 'storeGraduate')->name('graduates.store');
     });
 });

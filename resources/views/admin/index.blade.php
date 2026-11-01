@@ -28,6 +28,7 @@
     <div class="main">
         <div class="bar">
             <span class="chip"><b>Espace Admin</b> — <span id="bc">Vue d’ensemble</span></span>
+            <a class="btn out sm" href="{{ route('logs.index') }}"><i class="fa-solid fa-clock-rotate-left"></i> Mes journaux</a>
             <a class="btn out sm" href="{{ route('account.edit') }}"><i class="fa-solid fa-user-gear"></i> Compte</a>
             <form method="POST" action="{{ route('auth.logout') }}">
                 @csrf

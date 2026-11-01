@@ -9,6 +9,7 @@ use App\Http\Services\V1\PaymentService;
 use App\Http\Services\V1\ProfileSearchService;
 use App\Http\Services\V1\TicketService;
 use App\Models\Graduate;
+use App\Models\ProfileSearch;
 use App\Models\Ticket;
 use App\Models\University;
 use Illuminate\Http\RedirectResponse;
@@ -42,6 +43,19 @@ class RhController extends Controller
         $balance = $user->ticketBalance();
 
         return view('rh.index', compact('user', 'searches', 'universities', 'categories', 'tickets', 'balance'));
+    }
+
+    public function show(ProfileSearch $profileSearch, Request $request): View
+    {
+        abort_unless((int) $profileSearch->rh_user_id === (int) Auth::id(), 404);
+
+        $profileSearch->load(['graduate', 'university']);
+
+        return view('rh.searches.show', [
+            'profileSearch' => $profileSearch,
+            'user' => Auth::user(),
+            'autoPrint' => $request->boolean('print'),
+        ]);
     }
 
     public function search(Request $request): RedirectResponse

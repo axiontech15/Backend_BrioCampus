@@ -8,8 +8,10 @@
     <span class="chip"><i class="fa-solid fa-briefcase"></i> Espace Ressources Humaines</span>
     <nav class="links">
         <a class="on" href="{{ route('rh.index') }}">Dashboard</a>
+        <a href="#search-history">Historique</a>
         <a href="{{ route('rh.profile') }}">Mon profil</a>
         <a href="{{ route('account.edit') }}">Compte</a>
+        <a href="{{ route('logs.index') }}">Mes journaux</a>
     </nav>
     <button class="btn" type="button" data-open><i class="fa-solid fa-user-check"></i> Vérifier un candidat</button>
     <span class="av">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
@@ -113,7 +115,7 @@
         </div>
     </dialog>
 
-    <section class="panel">
+    <section class="panel" id="search-history">
         <div class="ph">
             <div>
                 <h3>Profils consultés</h3>
@@ -131,6 +133,7 @@
                         <th>Établissement</th>
                         <th>Date</th>
                         <th>Statut</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -142,9 +145,15 @@
                             <td>{{ $search->university?->name }}</td>
                             <td>{{ $search->created_at?->format('d/m/Y H:i') }}</td>
                             <td><span class="badge ok">Vérifié</span></td>
+                            <td>
+                                <div class="profile-row-actions">
+                                    <a class="btn out sm" href="{{ route('rh.searches.show', $search) }}">Voir</a>
+                                    <a class="btn out sm" href="{{ route('rh.searches.show', ['profileSearch' => $search, 'print' => 1]) }}" target="_blank" rel="noopener"><i class="fa-solid fa-print"></i> Imprimer</a>
+                                </div>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="empty">Aucune recherche enregistrée</td></tr>
+                        <tr><td colspan="7" class="empty">Aucune recherche enregistrée</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -231,6 +240,8 @@
         margin-inline: auto;
         padding: 36px clamp(18px, 4vw, 48px) 64px;
     }
+
+    .profile-row-actions { display:flex; flex-wrap:wrap; gap:6px; }
 
     .rh-page .hero {
         position: relative;

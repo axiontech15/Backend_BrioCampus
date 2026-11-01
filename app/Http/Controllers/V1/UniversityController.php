@@ -6,11 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Services\V1\LogService;
 use App\Http\Services\V1\PalmaresService;
 use App\Http\Services\V1\UniversityService;
+use App\Jobs\ProcessPalmaresImport;
+use App\Models\Graduate;
+use App\Models\Palmares;
 use App\Models\ProfileSearch;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use RuntimeException;
 
 class UniversityController extends Controller
 {
@@ -79,31 +85,97 @@ class UniversityController extends Controller
         }
 
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:5120'],
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx', 'extensions:csv,xlsx', 'max:5120'],
+        ], [
+            'file.required' => 'Veuillez sélectionner un fichier de palmarès.',
+            'file.mimes' => 'Fichier non reconnu. Utilisez un CSV (.csv) ou un fichier Excel (.xlsx) valide.',
+            'file.extensions' => 'Seuls les fichiers .csv et .xlsx sont acceptés.',
+            'file.max' => 'Le fichier ne peut pas dépasser 5 Mo.',
         ]);
 
         try {
-            $result = $this->palmaresService->importUploadedFile(
+            $palmares = $this->palmaresService->createPendingImport(
                 file: $request->file('file'),
                 universityId: (int) $university->id,
                 uploadedBy: (int) $user->id,
-                status: 'approved',
+                universityName: $university->name,
             );
-        } catch (\Throwable $e) {
-            return back()->with('error', 'Import impossible : '.$e->getMessage());
+        } catch (RuntimeException $exception) {
+            return back()->withErrors(['file' => $exception->getMessage()]);
         }
+
+        ProcessPalmaresImport::dispatch((int) $palmares->id)->afterCommit();
 
         $this->logService->createLog([
             'user_id' => $user->id,
             'action' => 'UPLOAD',
-            'description' => "Import palmarès : {$result['imported']} importé(s), {$result['skipped']} ignoré(s)",
+            'description' => "Palmarès envoyé pour traitement : {$palmares->file}",
             'ip_address' => $request->ip(),
             'user_agent' => (string) $request->userAgent(),
         ]);
 
-        $message = "Import terminé : {$result['imported']} diplômé(s) importé(s), {$result['skipped']} ligne(s) ignorée(s). Fichier enregistré.";
+        return back()->with('success', 'Fichier reçu. Son import est en attente de traitement ; son statut sera mis à jour automatiquement.');
+    }
 
-        return back()->with('success', $message)->with('import_errors', $result['errors']);
+    public function palmaresStatus(): JsonResponse
+    {
+        $university = Auth::user()->university;
+
+        if (! $university) {
+            abort(404);
+        }
+
+        return response()->json([
+            'pending' => $university->palmares()->where('status', 'pending')->count(),
+        ]);
+    }
+
+    public function storeGraduate(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $university = $user->university;
+
+        if (! $university) {
+            abort(404);
+        }
+
+        $data = $request->validate([
+            'matricule' => ['required', 'string', 'max:255', 'unique:graduates,matricule'],
+            'full_name' => ['required', 'string', 'max:255'],
+            'faculty' => ['required', 'string', 'max:255'],
+            'diploma_date' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        DB::transaction(function () use ($data, $university, $user): void {
+            $palmares = Palmares::create([
+                'university_id' => $university->id,
+                'file' => null,
+                'uploaded_by' => $user->id,
+                'status' => 'approved',
+                'uploaded_at' => now(),
+                'verified_at' => now(),
+                'verified_by' => $user->id,
+            ]);
+
+            Graduate::create([
+                'university_id' => $university->id,
+                'palmares_id' => $palmares->id,
+                'matricule' => $data['matricule'],
+                'name' => $data['full_name'],
+                'faculty' => $data['faculty'],
+                'diploma_date' => $data['diploma_date'],
+            ]);
+        });
+
+        $this->logService->createLog([
+            'user_id' => $user->id,
+            'action' => 'MANUAL_GRADUATE_CREATE',
+            'description' => "Ajout manuel du diplômé {$data['full_name']} ({$data['matricule']}).",
+            'ip_address' => $request->ip(),
+            'user_agent' => (string) $request->userAgent(),
+        ]);
+
+        return back()->with('success', 'Le diplômé a été ajouté au registre.');
     }
 
     public function apiIndex()

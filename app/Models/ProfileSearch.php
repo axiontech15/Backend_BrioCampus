@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 #[Fillable(['rh_user_id', 'graduate_id', 'university_id', 'ticket_id'])]
 class ProfileSearch extends Model
 {
+    use HasFactory;
+
     public const UPDATED_AT = null;
 
     /**

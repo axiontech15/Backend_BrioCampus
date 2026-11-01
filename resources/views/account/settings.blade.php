@@ -14,6 +14,7 @@
         @elseif (auth()->user()->isUniversity())
             <a href="{{ route('university.index') }}">Université</a>
         @endif
+        <a href="{{ route('logs.index') }}">Mes journaux</a>
     </nav>
     <form method="POST" action="{{ route('auth.logout') }}">
         @csrf
